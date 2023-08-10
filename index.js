@@ -124,6 +124,32 @@ app.get("/getMessages/:orderID" , async (req, res) => {
     }
 })
 
+//search for rooms
+app.post('/searchRooms', async (req, res) => {
+    const { searchType, searchValue } = req.body;
+    try {
+      let searchQuery = '';
+      let searchParams = [];
+  
+      if (searchType === 'orderID') {
+        searchQuery = 'SELECT * FROM rooms WHERE post_id = $1';
+        searchParams = [searchValue];
+      }
+  
+      const searchResults = await pool.query(searchQuery, searchParams);
+  
+      if (searchResults.rows.length > 0) {
+        return res.status(200).json({ orders: searchResults.rows });
+      } else {
+        return res.status(404).json({ message: 'No orders found' });
+      }
+    } catch (error) {
+      console.log(error.message);
+      res.status(500).json({ error: 'An error occurred while searching.' });
+    }
+  });
+  
+
 //get current address api and available transporters
 app.get("/getAddress/:user_id", async (req, res) => {
   try {
