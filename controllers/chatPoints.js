@@ -31,11 +31,10 @@ router.post("/roomId", async (req, res) => {
       [post_id, ownerID, orderMessage]
     );
 
-
-    //saving the order details to orders table
+    // Saving the order details to orders table
     await pool.query(
-      "INSERT INTO orders (order_id , from , to , manufacturer, transporter ) VALUES ($1, $2, $3 , $4, $5)",
-      [orderData.orderData, orderData.from, orderData.to, ownerID, user_id]
+      'INSERT INTO orders (order_id, "from", "to", manufacturer, transporter) VALUES ($1, $2, $3, $4, $5)',
+      [post_id, orderData.from, orderData.to, ownerID, user_id]
     );
 
     res.status(200).json({ roomID });
@@ -95,7 +94,7 @@ router.get("/getMessages/:orderID", async (req, res) => {
       }
     });
 
-    console.log("all message from database", messages);
+    // console.log("all message from database", messages);
     res.status(200).json(messages);
   } catch (error) {
     console.log(error.message);
@@ -104,14 +103,24 @@ router.get("/getMessages/:orderID", async (req, res) => {
 
 //search for rooms
 router.post("/searchRooms", async (req, res) => {
-  const { searchType, searchValue } = req.body;
+  const { searchType, searchValue, currentUser } = req.body;
+
   try {
     let searchQuery = "";
     let searchParams = [];
 
     if (searchType === "orderID") {
-      searchQuery = "SELECT * FROM rooms WHERE post_id = $1";
-      searchParams = [searchValue];
+      searchQuery =
+        "SELECT * FROM orders WHERE order_id = $1 AND (manufacturer = $2 OR transporter = $2)";
+      searchParams = [searchValue, currentUser];
+    } else if (searchType === "from") {
+      searchQuery =
+        'SELECT * FROM orders WHERE "from" = $1 AND (manufacturer = $2 OR transporter = $2)';
+      searchParams = [searchValue, currentUser];
+    } else if (searchType === "to") {
+      searchQuery =
+        'SELECT * FROM orders WHERE "to" = $1 AND (manufacturer = $2 OR transporter = $2)';
+      searchParams = [searchValue, currentUser];
     }
 
     const searchResults = await pool.query(searchQuery, searchParams);
