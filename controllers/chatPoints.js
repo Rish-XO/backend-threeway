@@ -104,6 +104,7 @@ router.get("/getMessages/:orderID", async (req, res) => {
 //search for rooms
 router.post("/searchRooms", async (req, res) => {
   const { searchType, searchValue, currentUser } = req.body;
+  console.log(searchType, searchValue, currentUser);
 
   try {
     let searchQuery = "";
@@ -124,6 +125,8 @@ router.post("/searchRooms", async (req, res) => {
     }
 
     const searchResults = await pool.query(searchQuery, searchParams);
+
+    console.log(searchResults.rows);
 
     if (searchResults.rows.length > 0) {
       return res.status(200).json({ orders: searchResults.rows });
